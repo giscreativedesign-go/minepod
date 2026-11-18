@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MinePod by Lourdes Auto Parts</title>
+  <meta name="description" content="Sistem penunjang kerja produksi podcast · Wawasan Inspiratif untuk Bisnis Masa Depan - Siap Deploy di Supabase & Vercel">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎙️%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- HEADER UTAMA -->
+  <header>
+    <div class="brand">
+      <img src="./img/logo-lourdes.png" alt="Lourdes Auto Parts" class="brand-logo">
+      <div class="brand-text">
+        <h1>MinePod <span>by Lourdes</span></h1>
+        <p>Sistem penunjang kerja produksi podcast · “Wawasan Inspiratif untuk Bisnis Masa Depan”</p>
+      </div>
+    </div>
+    <select id="theme-select" class="theme-select" aria-label="Pilih tema tampilan" title="Pilih tema tampilan">
+      <option value="dark" aria-label="Dark">🌙</option>
+      <option value="soft-dark" aria-label="Soft Dark">🌘</option>
+      <option value="light" aria-label="Light">☀️</option>
+      <option value="soft-light" aria-label="Soft Light">🌤️</option>
+    </select>
+  </header>
+
+  <div class="app-layout">
+    <!-- SIDEBAR NAVIGATION -->
+    <nav id="nav" aria-label="Navigasi utama"></nav>
+
+    <!-- MAIN APPLICATION CONTENT -->
+    <main id="app"></main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <b>MinePod</b> © 2026 PT. Garuda Mart Indonesia / Lourdes Auto Parts · Sistem Manajemen Produksi Podcast
+    </div>
+    <div class="sm">
+      Siap Deploy: <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> &amp; <a href="https://vercel.com" target="_blank" rel="noopener">Vercel</a>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: PENGATURAN SUPABASE                                            -->
+  <!-- ===================================================================== -->
+  <div id="supabase-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>⚙️ Konfigurasi Database Supabase</h3>
+        <button class="modal-close" id="btn-close-settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="sm">
+          Aplikasi MinePod dapat langsung disinkronkan ke <b>Supabase</b> (PostgreSQL + Realtime).
+          Jika dideploy di <b>Vercel</b>, konfigurasi ini otomatis terbaca melalui Environment Variables (<code>SUPABASE_URL</code> dan <code>SUPABASE_ANON_KEY</code>).
+        </p>
+
+        <div style="background:var(--card-subtle); padding:12px; border-radius:8px; border:1px solid var(--line); font-size:12.5px;">
+          <b>Langkah Cepat Setup Supabase:</b>
+          <ol style="margin:6px 0 0; padding-left:20px;">
+            <li>Buat project di <a href="https://supabase.com/dashboard" target="_blank">supabase.com</a>.</li>
+            <li>Buka menu <b>SQL Editor</b>, lalu jalankan isi file <code>supabase/schema.sql</code>.</li>
+            <li>Salin <b>Project URL</b> dan <b>anon public key</b> dari <i>Project Settings &gt; API</i>.</li>
+          </ol>
+        </div>
+
+        <label style="display:grid; gap:4px; font-size:12.5px; font-weight:600;">
+          Supabase Project URL
+          <input type="url" id="cfg-url" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off">
+        </label>
+
+        <label style="display:grid; gap:4px; font-size:12.5px; font-weight:600;">
+          Supabase Anon Public API Key
+          <input type="password" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." autocomplete="off">
+        </label>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+          <button id="btn-save-settings" class="b" style="flex:1;">
+            💾 Simpan &amp; Hubungkan
+          </button>
+          <button id="btn-seed-remote" class="b g" style="flex:1;" title="Unggah data awal Lourdes Auto Parts ke tabel Supabase">
+            🌱 Unggah Data Awal ke Supabase
+          </button>
+        </div>
+
+        <div style="display:flex; justify-content:center; margin-top:4px;">
+          <button id="btn-disconnect-settings" class="b g" style="color:var(--mut); border-color:transparent; font-size:12px;">
+            Putus Koneksi &amp; Gunakan Mode Offline Lokal
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="b g" id="btn-cancel-settings">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: CADANGAN DATA (BACKUP & RESTORE)                                -->
+  <!-- ===================================================================== -->
+  <div id="backup-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>📥 Cadangan Data &amp; Reset</h3>
+        <button class="modal-close" id="btn-close-backup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="sm">
+          Salin teks JSON di bawah untuk menyimpan cadangan manual seluruh episode, tamu, peralatan, risiko, KPI, QCC, dan Fishbone.
+          Anda juga dapat menempelkan teks cadangan lama lalu menekan tombol <b>Muat Cadangan</b>.
+        </p>
+        <textarea id="backup-textarea" style="width:100%; height:160px; font:11.5px monospace; border-radius:8px;"></textarea>
+        
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="b" id="btn-load-backup">Muat Cadangan</button>
+          <button class="b g" id="btn-copy-backup">Salin ke Clipboard</button>
+          <button class="b g" id="btn-reset-seed" style="color:var(--bad);">Reset ke Data Awal</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="b g" id="btn-cancel-backup">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- SCRIPT UTAMA APP & SUPABASE -->
+  <script type="module">
+    import { initApp, S, seed, saveLocal, render, showToast } from './js/app.js';
+    import { supabaseManager } from './js/supabase.js';
+
+    const themes = ['dark', 'soft-dark', 'light', 'soft-light'];
+    const savedTheme = localStorage.getItem('minepod_theme');
+    const initialTheme = themes.includes(savedTheme)
+      ? savedTheme
+      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const themeSelect = document.getElementById('theme-select');
+    const themeNames = {
+      dark: 'Dark',
+      'soft-dark': 'Soft Dark',
+      light: 'Light',
+      'soft-light': 'Soft Light'
+    };
+    const setTheme = (selectedTheme) => {
+      if (!themes.includes(selectedTheme)) return;
+      document.documentElement.setAttribute('data-theme', selectedTheme);
+      localStorage.setItem('minepod_theme', selectedTheme);
+      themeSelect.value = selectedTheme;
+      themeSelect.title = `Tema: ${themeNames[selectedTheme]}`;
+    };
+    setTheme(initialTheme);
+    themeSelect.addEventListener('change', () => {
+      setTheme(themeSelect.value);
+    });
+
+    // Supabase Settings Modal Wiring
+    const settingsModal = document.getElementById('supabase-modal');
+    const closeSettings = () => settingsModal.classList.remove('active');
+
+    document.getElementById('btn-close-settings').addEventListener('click', closeSettings);
+    document.getElementById('btn-cancel-settings').addEventListener('click', closeSettings);
+
+    document.getElementById('btn-save-settings').addEventListener('click', async () => {
+      const url = document.getElementById('cfg-url').value.trim();
+      const key = document.getElementById('cfg-key').value.trim();
+      if (!url || !key) {
+        alert('Harap masukkan Project URL dan Anon Key Supabase.');
+        return;
+      }
+      showToast('Menguji koneksi Supabase...', 'info');
+      const ok = await supabaseManager.init({ url, anonKey: key });
+      if (ok) {
+        showToast('Koneksi Supabase berhasil!', 'success');
+        const remoteData = await supabaseManager.fetchAll();
+        if (remoteData && remoteData.eps && remoteData.eps.length > 0) {
+          Object.assign(S, remoteData);
+          saveLocal();
+          render();
+        }
+        closeSettings();
+      } else {
+        alert('Gagal menghubungkan ke Supabase. Periksa URL, Key, dan pastikan file supabase/schema.sql sudah dijalankan di SQL Editor.');
+      }
+    });
+
+    document.getElementById('btn-seed-remote').addEventListener('click', async () => {
+      if (!supabaseManager.isConnected) {
+        alert('Hubungkan ke Supabase terlebih dahulu sebelum mengunggah data awal.');
+        return;
+      }
+      if (!confirm('Unggah seluruh data awal Lourdes Auto Parts ke database Supabase sekarang?')) return;
+      try {
+        await supabaseManager.seedDatabase(S || seed());
+        showToast('Data awal berhasil diunggah ke Supabase!', 'success');
+        closeSettings();
+      } catch (err) {
+        alert('Gagal mengunggah seed data: ' + err.message);
+      }
+    });
+
+    document.getElementById('btn-disconnect-settings').addEventListener('click', () => {
+      if (confirm('Putus koneksi Supabase dan beralih ke mode offline lokal?')) {
+        supabaseManager.disconnect();
+        showToast('Koneksi diputus. Menggunakan data lokal.', 'info');
+        closeSettings();
+      }
+    });
+
+    // Backup & Restore Modal Wiring
+    const backupModal = document.getElementById('backup-modal');
+    const closeBackup = () => backupModal.classList.remove('active');
+
+    document.getElementById('btn-close-backup').addEventListener('click', closeBackup);
+    document.getElementById('btn-cancel-backup').addEventListener('click', closeBackup);
+
+    document.getElementById('btn-copy-backup').addEventListener('click', () => {
+      const ta = document.getElementById('backup-textarea');
+      ta.select();
+      navigator.clipboard.writeText(ta.value).then(() => {
+        showToast('Teks cadangan disalin ke clipboard!', 'success');
+      });
+    });
+
+    document.getElementById('btn-load-backup').addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse(document.getElementById('backup-textarea').value);
+        if (!parsed || !parsed.eps) throw new Error('Format cadangan tidak valid');
+        Object.assign(S, parsed);
+        saveLocal();
+        render();
+        showToast('Data cadangan berhasil dimuat!', 'success');
+        closeBackup();
+      } catch (e) {
+        alert('Teks cadangan tidak valid. Pastikan format JSON benar.');
+      }
+    });
+
+    document.getElementById('btn-reset-seed').addEventListener('click', () => {
+      if (confirm('Yakin ingin mereset seluruh data kembali ke data awal bawaan?')) {
+        const fresh = seed();
+        Object.keys(fresh).forEach(k => S[k] = fresh[k]);
+        saveLocal();
+        render();
+        showToast('Data berhasil direset ke awal.', 'info');
+        closeBackup();
+      }
+    });
+
+    // Jalankan inisialisasi aplikasi
+    initApp();
+  </script>
+</body>
+</html>

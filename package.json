@@ -1,0 +1,19 @@
+{
+  "name": "minepod-lourdes-podcast",
+  "version": "1.0.0",
+  "description": "MinePod by Lourdes Auto Parts - Sistem Penunjang Kerja Produksi Podcast",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'MinePod siap dideploy ke Vercel (static + serverless api)'"
+  },
+  "keywords": [
+    "podcast",
+    "supabase",
+    "vercel",
+    "production-management"
+  ],
+  "author": "Lourdes Auto Parts",
+  "license": "MIT"
+}
