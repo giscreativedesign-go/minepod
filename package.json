@@ -15,5 +15,14 @@
     "production-management"
   ],
   "author": "Lourdes Auto Parts",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giscreativedesign-go/minepod.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/giscreativedesign-go/minepod/issues"
+  },
+  "homepage": "https://github.com/giscreativedesign-go/minepod#readme"
 }
