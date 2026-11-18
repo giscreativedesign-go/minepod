@@ -12,7 +12,8 @@ Aplikasi manajemen dan pipeline produksi podcast siap pakai yang dirancang untuk
 - **Sinkronisasi Supabase Realtime:** Setiap perubahan data (checklist, judul, tanggal, status) otomatis tersinkronisasi ke PostgreSQL Supabase dan langsung tampil di perangkat tim lain secara realtime.
 - **Offline / Local Fallback:** Jika belum terhubung ke Supabase atau saat koneksi internet terputus, aplikasi tetap berjalan mulus menggunakan `localStorage` browser.
 - **Manajemen Tamu (Guest Relations):** Pelacakan status undangan narasumber, keterkaitan episode, hingga verifikasi *Release Form*.
-- **Pelacakan Target KPI:** Evaluasi metrik mingguan dan bulanan (Viewer, Retention, Interaksi, Pertumbuhan Subscriber, Calon Klien/Mitra) dengan indikator pencapaian target.
+- **Rekap Kinerja:** Menggabungkan target dan laporan KPI, metrik kerja, serta WLA per tahap/PIC dengan diagram batang dan donat. SLA ditandai belum dikonfigurasi sampai target dan data aktual tersedia.
+- **Menu QCC Podcast:** Analisa episode dan checklist produksi, perbandingan periode, jadwal rekaman/rilis, metrik pendengar, Pareto checklist tertunda, kandidat tema, Fishbone 6M, tindak lanjut PDCA, serta ekspor laporan PowerPoint 17 slide. Catatan QCC disimpan lokal di browser.
 - **Anggaran & Peralatan (Paket A):** Pelacakan spesifikasi alat studio, estimasi biaya vs realisasi, status pesanan, serta kalkulasi otomatis selisih hemat/over-budget.
 - **Mitigasi Risiko Produksi:** SOP antisipasi kendala teknis, audio, konsistensi jadwal, dan legalitas.
 - **Cadangan & Reset (Backup JSON):** Ekspor dan impor data sewaktu-waktu dalam format JSON.
