@@ -4,12 +4,12 @@
    ========================================================================== */
 
 :root {
-  --bg: #f4f6f9;
+  --bg: #ffffff;
   --card: #ffffff;
-  --card-subtle: #f8fafc;
-  --ink: #1e293b;
-  --mut: #64748b;
-  --line: #e2e8f0;
+  --card-subtle: #f5f5f5;
+  --ink: #111111;
+  --mut: #555555;
+  --line: #d9d9d9;
   --blue: #025a92;
   --blue-hover: #034b7a;
   --blue-soft: #e0f2fe;
@@ -28,12 +28,12 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --card-subtle: #162032;
-  --ink: #f1f5f9;
-  --mut: #94a3b8;
-  --line: #334155;
+  --bg: #000000;
+  --card: #111111;
+  --card-subtle: #1a1a1a;
+  --ink: #f5f5f5;
+  --mut: #b3b3b3;
+  --line: #383838;
   --blue: #38bdf8;
   --blue-hover: #7dd3fc;
   --blue-soft: #0369a133;
@@ -42,39 +42,39 @@
   --bad: #fca5a5;
   --okbg: #064e3b;
   --badbg: #450a0a;
-  --inbg: #0f172a;
+  --inbg: #111111;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
 }
 
 :root[data-theme="soft-dark"] {
-  --bg: #252a34;
-  --card: #303744;
-  --card-subtle: #394251;
-  --ink: #e6e9ef;
-  --mut: #b0b8c5;
-  --line: #485363;
+  --bg: #202020;
+  --card: #2a2a2a;
+  --card-subtle: #353535;
+  --ink: #f0f0f0;
+  --mut: #c2c2c2;
+  --line: #4a4a4a;
   --blue: #8ab4e8;
-  --blue-hover: #a7c8f2;
+  --blue-hover: #b7d4f5;
   --blue-soft: #46617f66;
   --green: #8bc99a;
   --ok: #9bd5a5;
   --bad: #f0a3a3;
   --okbg: #344d3a;
   --badbg: #593a3a;
-  --inbg: #292f39;
+  --inbg: #242424;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.22);
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.24), 0 2px 4px -2px rgb(0 0 0 / 0.14);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.2);
 }
 
 :root[data-theme="soft-light"] {
-  --bg: #f3efe8;
-  --card: #fffdf8;
-  --card-subtle: #f8f4ec;
-  --ink: #393a3d;
-  --mut: #77766f;
-  --line: #e3ddd1;
+  --bg: #f1f1f1;
+  --card: #fafafa;
+  --card-subtle: #eaeaea;
+  --ink: #303030;
+  --mut: #626262;
+  --line: #d3d3d3;
   --blue: #527b9b;
   --blue-hover: #426783;
   --blue-soft: #dce8ef;
@@ -83,10 +83,10 @@
   --bad: #9b5353;
   --okbg: #e2eee2;
   --badbg: #f4e3e0;
-  --inbg: #fffefa;
-  --shadow-sm: 0 1px 2px 0 rgb(62 52 38 / 0.06);
-  --shadow: 0 4px 6px -1px rgb(62 52 38 / 0.08), 0 2px 4px -2px rgb(62 52 38 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(62 52 38 / 0.1), 0 4px 6px -4px rgb(62 52 38 / 0.06);
+  --inbg: #fafafa;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.06);
 }
 
 *, *::before, *::after {
@@ -160,25 +160,45 @@ header {
   font-size: 12px;
 }
 
-.theme-select {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 40px;
+.theme-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   height: 38px;
   margin-left: auto;
-  padding: 4px;
+  padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--inbg);
   color: var(--ink);
-  font-size: 19px;
-  text-align: center;
-  cursor: pointer;
   box-shadow: var(--shadow-sm);
 }
 
-.theme-select:hover,
-.theme-select:focus-visible {
+.theme-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.theme-select {
+  min-width: 100px;
+  border: 0;
+  padding: 6px 2px;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: 600 13px/1.2 var(--font);
+  cursor: pointer;
+}
+
+.theme-select option {
+  background: var(--card);
+  color: var(--ink);
+}
+
+.theme-control:hover,
+.theme-control:focus-within {
   border-color: var(--blue);
   background: var(--card-subtle);
 }
@@ -216,7 +236,7 @@ header {
   content: "MENU UTAMA";
   padding: 0 12px 10px;
   color: var(--mut);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
 }
@@ -234,7 +254,7 @@ header {
   border: 0;
   background: none;
   color: var(--mut);
-  font: 600 13px/1.4 var(--font);
+  font: 600 15px/1.4 var(--font);
   text-align: left;
   padding: 10px 12px;
   border-radius: 8px;
@@ -994,7 +1014,7 @@ button.b.g:hover {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: conic-gradient(#10b981 0 var(--donut-progress), #d7deea var(--donut-progress) 100%);
+  background: conic-gradient(#10b981 0 var(--donut-progress), #e5e5e5 var(--donut-progress) 100%);
   position: relative;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
@@ -1002,7 +1022,7 @@ button.b.g:hover {
 
 :root[data-theme="dark"] .report-donut,
 :root[data-theme="soft-dark"] .report-donut {
-  background: conic-gradient(#10b981 0 var(--donut-progress), #334155 var(--donut-progress) 100%);
+  background: conic-gradient(#10b981 0 var(--donut-progress), #4a4a4a var(--donut-progress) 100%);
 }
 
 .report-donut::before {
@@ -1061,12 +1081,12 @@ button.b.g:hover {
 }
 
 .legend-remaining {
-  background: #d7deea;
+  background: #e5e5e5;
 }
 
 :root[data-theme="dark"] .legend-remaining,
 :root[data-theme="soft-dark"] .legend-remaining {
-  background: #334155;
+  background: #4a4a4a;
 }
 
 .report-timeline {

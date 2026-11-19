@@ -19,12 +19,18 @@
         <p>Sistem penunjang kerja produksi podcast · “Wawasan Inspiratif untuk Bisnis Masa Depan”</p>
       </div>
     </div>
-    <select id="theme-select" class="theme-select" aria-label="Pilih tema tampilan" title="Pilih tema tampilan">
-      <option value="dark" aria-label="Dark">🌙</option>
-      <option value="soft-dark" aria-label="Soft Dark">🌘</option>
-      <option value="light" aria-label="Light">☀️</option>
-      <option value="soft-light" aria-label="Soft Light">🌤️</option>
-    </select>
+    <div class="theme-control">
+      <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>
+      </svg>
+      <select id="theme-select" class="theme-select" aria-label="Pilih tema tampilan" title="Pilih tema tampilan">
+        <option value="dark">Gelap</option>
+        <option value="soft-dark">Soft Dark</option>
+        <option value="light">Terang</option>
+        <option value="soft-light">Soft Light</option>
+      </select>
+    </div>
   </header>
 
   <div class="app-layout">
@@ -143,9 +149,9 @@
       : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     const themeSelect = document.getElementById('theme-select');
     const themeNames = {
-      dark: 'Dark',
+      dark: 'Gelap',
       'soft-dark': 'Soft Dark',
-      light: 'Light',
+      light: 'Terang',
       'soft-light': 'Soft Light'
     };
     const setTheme = (selectedTheme) => {

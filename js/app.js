@@ -45,22 +45,22 @@ const FISHBONE_CATEGORIES = [
 ];
 const QCC_PPT_SLIDES = [
   "Sampul",
-  "Ringkasan periode",
-  "Sumber data",
-  "Pareto checklist tertunda",
-  "Progres per tahap produksi",
-  "Kandidat tema",
-  "Distribusi pipeline episode",
-  "Jadwal rekaman dan rilis",
-  "Performa pendengar",
-  "Kesiapan tamu",
-  "Fishbone sebab akibat",
-  "Progres per episode",
-  "Perbandingan dua rentang",
-  "Target rilis episode",
-  "Tindak lanjut",
-  "Batasan data",
-  "Penutup"
+  "Ringkasan Produksi Podcast",
+  "Sumber dan Cakupan Data",
+  "Pareto Checklist Tertunda per Tahap",
+  "Progres Checklist per Tahap",
+  "Kandidat Tema Perbaikan",
+  "Distribusi Pipeline Episode",
+  "Kesiapan Jadwal Rekaman dan Rilis",
+  "Performa Pendengar",
+  "Kesiapan Produksi: Tamu, Peralatan, dan Risiko",
+  "Fishbone Sebab Akibat",
+  "Progres per Episode",
+  "Perbandingan Dua Rentang",
+  "Target Rilis Episode",
+  "Tindak Lanjut QCC - PDCA",
+  "Batasan Data",
+  "Langkah Berikutnya: Pilih Tema dan Tetapkan Target"
 ];
 export const KL = {
   v: "Viewer / stream per minggu (1 episode)",
@@ -1147,48 +1147,352 @@ async function exportQccPptReport() {
   const PptxGenJS = await loadPptxGenJS();
   const pptx = new PptxGenJS();
   const data = getQccAnalysis();
-  const { current, compare, currentEpisodes, period, metrics, releaseTargetRate } = data;
+  const { current, compare, currentEpisodes, period, metrics, compareSupport, releaseTargetRate } = data;
   const themes = qccCandidateThemes(data);
   const pipelineRows = ST.map((label, index) => ({ label, value: current.stageCounts[index] }));
   const stageProgressRows = current.stageWork.map(stage => ({
     label: ST[stage.index],
     value: stage.total ? stage.completed / stage.total * 100 : 0
   }));
+  const colors = {
+    navy: '0E3B5C',
+    blue: '00579B',
+    orange: 'E8710A',
+    green: '1A5E3A',
+    pale: 'EEF3F6',
+    text: '16232E',
+    muted: '6B7A86',
+    white: 'FFFFFF'
+  };
+  const periodRangeLabel = (from, to) => `${dt(from)} - ${dt(to)}`;
+  const activeSectionByPage = { 4: 1, 5: 1, 6: 1, 7: 2, 8: 2, 9: 3, 10: 3, 11: 4, 12: 5, 13: 6, 14: 7, 15: 8 };
+  const addPanel = (slide, x, y, w, h, fill = colors.pale) => {
+    slide.addShape(pptx.ShapeType.rect, {
+      x, y, w, h,
+      fill: { color: fill },
+      line: { color: fill, transparency: 100 }
+    });
+  };
   const addHeader = (slide, title, subtitle, page) => {
-    slide.background = { color: 'F8FAFC' };
-    slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.16, fill: { color: '2563EB' }, line: { color: '2563EB' } });
-    slide.addText(title, { x: 0.65, y: 0.42, w: 12, h: 0.52, fontFace: 'Aptos Display', fontSize: 24, bold: true, color: '1E293B', margin: 0 });
-    if (subtitle) slide.addText(subtitle, { x: 0.67, y: 1.02, w: 12, h: 0.38, fontFace: 'Aptos', fontSize: 11, color: '64748B', margin: 0 });
-    slide.addText(`QCC MinePod ? ${page}/17`, { x: 10.2, y: 7.12, w: 2.45, h: 0.2, fontFace: 'Aptos', fontSize: 9, color: '64748B', align: 'right', margin: 0 });
+    slide.background = { color: colors.white };
+    slide.addText(title, {
+      x: 0.6, y: 0.36, w: 9.9, h: 0.78,
+      fontFace: 'Aptos Display', fontSize: 26, bold: true, color: colors.navy,
+      margin: 0, fit: 'shrink'
+    });
+    if (subtitle) slide.addText(subtitle, {
+      x: 0.62, y: 1.08, w: 9.8, h: 0.26,
+      fontFace: 'Aptos', fontSize: 10.5, color: colors.muted, margin: 0, fit: 'shrink'
+    });
+
+    const activeSection = activeSectionByPage[page];
+    if (activeSection) {
+      for (let index = 1; index <= 8; index++) {
+        const active = index === activeSection;
+        const x = 10.8 + (index - 1) * 0.245;
+        slide.addShape(pptx.ShapeType.rect, {
+          x, y: 0.45, w: 0.21, h: 0.21,
+          fill: { color: active ? colors.orange : colors.pale },
+          line: { color: active ? colors.orange : colors.pale, transparency: 100 }
+        });
+        slide.addText(String(index), {
+          x, y: 0.45, w: 0.21, h: 0.21, fontFace: 'Aptos',
+          fontSize: 8, bold: active, color: active ? colors.white : colors.muted,
+          align: 'center', valign: 'mid', margin: 0
+        });
+      }
+    }
+
+    slide.addText(`Periode ${periodRangeLabel(period.from, period.to)}`, {
+      x: 0.6, y: 6.82, w: 9.4, h: 0.3,
+      fontFace: 'Aptos', fontSize: 9.5, color: colors.muted, margin: 0, fit: 'shrink'
+    });
+    slide.addText(String(page), {
+      x: 12.33, y: 6.86, w: 0.4, h: 0.24,
+      fontFace: 'Aptos', fontSize: 9, color: colors.muted, align: 'right', margin: 0
+    });
   };
   const addTextSlide = (title, lines, page, subtitle = '') => {
     const slide = pptx.addSlide();
+    if (page === 17) {
+      slide.background = { color: colors.navy };
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0, y: 0, w: 13.333, h: 0.14,
+        fill: { color: colors.orange }, line: { color: colors.orange }
+      });
+      slide.addText(title, {
+        x: 0.6, y: 2.05, w: 11.9, h: 1.05,
+        fontFace: 'Aptos Display', fontSize: 34, bold: true, color: colors.white,
+        margin: 0, fit: 'shrink'
+      });
+      lines.slice(0, 4).forEach((line, index) => {
+        slide.addText(`${String(index + 1).padStart(2, '0')}   ${line}`, {
+          x: 0.65, y: 3.45 + index * 0.52, w: 11.2, h: 0.4,
+          fontFace: 'Aptos', fontSize: 15, color: 'C9D6DF', margin: 0, fit: 'shrink'
+        });
+      });
+      slide.addText('MINEPOD  /  LOURDES AUTO PARTS', {
+        x: 0.6, y: 6.35, w: 6, h: 0.3,
+        fontFace: 'Aptos', fontSize: 11, bold: true, color: 'C9D6DF', margin: 0
+      });
+      return slide;
+    }
+
     addHeader(slide, title, subtitle, page);
-    slide.addText(lines.length ? lines.map(line => `- ${line}`).join('\n') : 'Belum ada data pada periode ini.', {
-      x: 0.85, y: 1.65, w: 11.6, h: 5.1, fontFace: 'Aptos', fontSize: 17, color: '334155', valign: 'top', margin: 0.08, paraSpaceAfterPt: 12, fit: 'shrink'
+    const items = lines.length ? lines.slice(0, 8) : ['Belum ada data pada periode ini.'];
+    const columns = items.length >= 4 ? 2 : items.length;
+    const rows = Math.ceil(items.length / columns);
+    const gapX = 0.25;
+    const gapY = 0.16;
+    const cardW = (12.13 - gapX * (columns - 1)) / columns;
+    const cardH = (5.05 - gapY * (rows - 1)) / rows;
+
+    items.forEach((line, index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const x = 0.6 + column * (cardW + gapX);
+      const y = 1.5 + row * (cardH + gapY);
+      addPanel(slide, x, y, cardW, cardH, index % 2 ? 'F5F7F8' : colors.pale);
+      slide.addShape(pptx.ShapeType.rect, {
+        x, y, w: 0.07, h: cardH,
+        fill: { color: colors.orange }, line: { color: colors.orange }
+      });
+      slide.addText(String(index + 1).padStart(2, '0'), {
+        x: x + 0.24, y: y + 0.15, w: 0.45, h: 0.24,
+        fontFace: 'Aptos', fontSize: 10, bold: true, color: colors.orange, margin: 0
+      });
+      slide.addText(line, {
+        x: x + 0.24, y: y + 0.43, w: cardW - 0.48, h: Math.max(0.32, cardH - 0.55),
+        fontFace: 'Aptos', fontSize: rows > 2 ? 12 : 14, color: colors.text,
+        valign: 'mid', margin: 0, fit: 'shrink'
+      });
     });
+    if (lines.length > items.length) {
+      slide.addText(`Menampilkan ${items.length} dari ${lines.length} item.`, {
+        x: 0.62, y: 6.54, w: 9.4, h: 0.2, fontFace: 'Aptos',
+        fontSize: 9, color: colors.muted, margin: 0
+      });
+    }
     return slide;
   };
   const addBarSlide = (title, rows, page, suffix) => {
     const slide = pptx.addSlide();
-    addHeader(slide, title, qccPeriodLabel(period.from, period.to), page);
-    const max = Math.max(1, ...rows.map(row => row.value));
-    if (!rows.length) {
-      slide.addText('Belum ada data untuk ditampilkan.', { x: 0.85, y: 1.8, w: 11.6, h: 0.5, fontFace: 'Aptos', fontSize: 16, color: '64748B', margin: 0 });
-      return slide;
-    }
-    rows.slice(0, 8).forEach((row, index) => {
-      const y = 1.65 + index * 0.58;
-      const width = row.value / max * 7.2;
-      const value = Number(row.value).toLocaleString('id-ID', { maximumFractionDigits: 1 });
-      slide.addText(row.label, { x: 0.85, y, w: 2.8, h: 0.3, fontFace: 'Aptos', fontSize: 11, color: '334155', margin: 0, fit: 'shrink' });
-      slide.addShape(pptx.ShapeType.rect, { x: 3.8, y: y + 0.03, w: 7.2, h: 0.25, fill: { color: 'E2E8F0' }, line: { color: 'E2E8F0' } });
-      if (width > 0) slide.addShape(pptx.ShapeType.rect, {
-        x: 3.8, y: y + 0.03, w: width, h: 0.25,
-        fill: { color: QCC_CHART_COLORS[index % QCC_CHART_COLORS.length] },
-        line: { color: QCC_CHART_COLORS[index % QCC_CHART_COLORS.length] }
+    addHeader(slide, title, periodRangeLabel(period.from, period.to), page);
+    const chartRows = rows.slice(0, 8);
+    const max = Math.max(1, ...chartRows.map(row => row.value));
+    const total = chartRows.reduce((sum, row) => sum + row.value, 0);
+    const top = chartRows[0];
+    if (chartRows.length) {
+      const rowGap = Math.min(0.62, 4.65 / chartRows.length);
+      chartRows.forEach((row, index) => {
+        const y = 1.68 + index * rowGap;
+        const trackX = 3.35;
+        const trackW = 4.2;
+        const width = row.value / max * trackW;
+        const value = Number(row.value).toLocaleString('id-ID', { maximumFractionDigits: 1 });
+        slide.addText(row.label, {
+          x: 0.82, y, w: 2.35, h: 0.28,
+          fontFace: 'Aptos', fontSize: 11.5, color: colors.text, margin: 0, fit: 'shrink'
+        });
+        slide.addShape(pptx.ShapeType.rect, {
+          x: trackX, y: y + 0.04, w: trackW, h: 0.2,
+          fill: { color: colors.pale }, line: { color: colors.pale }
+        });
+        if (width > 0) slide.addShape(pptx.ShapeType.rect, {
+          x: trackX, y: y + 0.04, w: width, h: 0.2,
+          fill: { color: index === 0 ? colors.orange : colors.blue },
+          line: { color: index === 0 ? colors.orange : colors.blue }
+        });
+        slide.addText(`${value} ${suffix}`, {
+          x: 7.68, y, w: 1.1, h: 0.28,
+          fontFace: 'Aptos', fontSize: 10.5, bold: index === 0, color: colors.text,
+          align: 'right', margin: 0, fit: 'shrink'
+        });
       });
-      slide.addText(`${value} ${suffix}`, { x: 11.15, y, w: 1.3, h: 0.3, fontFace: 'Aptos', fontSize: 10, color: '334155', margin: 0, fit: 'shrink' });
+    } else {
+      slide.addText('Belum ada data untuk ditampilkan.', {
+        x: 0.85, y: 1.8, w: 7.8, h: 0.5,
+        fontFace: 'Aptos', fontSize: 16, color: colors.muted, margin: 0
+      });
+    }
+
+    addPanel(slide, 9.1, 1.5, 3.63, 5.1);
+    slide.addText('Cara membaca', {
+      x: 9.35, y: 1.72, w: 3.13, h: 0.32,
+      fontFace: 'Aptos', fontSize: 15, bold: true, color: colors.navy, margin: 0
+    });
+    slide.addText(top ? `${Number(top.value).toLocaleString('id-ID', { maximumFractionDigits: 1 })}` : '0', {
+      x: 9.35, y: 2.12, w: 3.13, h: 0.8,
+      fontFace: 'Aptos Display', fontSize: 34, bold: true, color: colors.orange, margin: 0, fit: 'shrink'
+    });
+    slide.addText(top ? `${suffix} - ${top.label}` : 'Data belum tersedia', {
+      x: 9.35, y: 2.95, w: 3.13, h: 0.55,
+      fontFace: 'Aptos', fontSize: 13, color: colors.muted, margin: 0, fit: 'shrink'
+    });
+    slide.addText(top
+      ? suffix === '%'
+        ? `Tahap dengan progres tertinggi adalah ${top.label}. Gunakan distribusi ini untuk menentukan checklist yang perlu diprioritaskan.`
+        : `${total.toLocaleString('id-ID')} ${suffix} tercatat pada kategori yang ditampilkan. Gunakan kategori tertinggi sebagai titik awal diskusi perbaikan.`
+      : 'Lengkapi checklist dan data episode pada periode ini untuk menampilkan analisa.',
+    {
+      x: 9.35, y: 3.62, w: 3.13, h: 2.7,
+      fontFace: 'Aptos', fontSize: 13, color: colors.text, valign: 'top',
+      margin: 0, fit: 'shrink'
+    });
+    return slide;
+  };
+  const addSummarySlide = () => {
+    const slide = pptx.addSlide();
+    addHeader(slide, 'Ringkasan Produksi Podcast', data.baseline ? 'Baseline seluruh episode' : periodRangeLabel(period.from, period.to), 2);
+    const metrics = [
+      { value: String(current.total), label: 'Episode dianalisis', detail: `${data.scheduledEpisodes.length} episode sudah memiliki jadwal`, color: colors.blue },
+      { value: qccRate(current.averageProgress), label: 'Progres checklist', detail: `${current.completedTasks}/${current.totalTasks} tugas selesai`, color: colors.green },
+      { value: String(current.remainingTasks), label: 'Checklist tertunda', detail: `${current.overdueReleases} jadwal rilis terlewati`, color: colors.orange }
+    ];
+    metrics.forEach((metric, index) => {
+      const x = 0.6 + index * 4.04;
+      slide.addText(metric.value, {
+        x, y: 1.58, w: 3.65, h: 0.95,
+        fontFace: 'Aptos Display', fontSize: 40, bold: true, color: metric.color, margin: 0, fit: 'shrink'
+      });
+      slide.addText(metric.label, {
+        x, y: 2.55, w: 3.65, h: 0.32,
+        fontFace: 'Aptos', fontSize: 14, bold: true, color: colors.navy, margin: 0
+      });
+      slide.addText(metric.detail, {
+        x, y: 2.92, w: 3.65, h: 0.52,
+        fontFace: 'Aptos', fontSize: 12, color: colors.text, margin: 0, fit: 'shrink'
+      });
+    });
+    addPanel(slide, 0.6, 4, 12.13, 2.3);
+    slide.addText('Yang perlu diperhatikan', {
+      x: 0.85, y: 4.22, w: 11.63, h: 0.32,
+      fontFace: 'Aptos', fontSize: 15, bold: true, color: colors.navy, margin: 0
+    });
+    const attention = [
+      current.overdueReleases ? `${current.overdueReleases} episode melewati tanggal rilis dan belum ditandai diunggah.` : 'Tidak ada episode lewat tanggal rilis pada periode ini.',
+      current.missingSchedule ? `${current.missingSchedule} episode belum memiliki tanggal rekaman maupun rilis.` : `${current.completedEpisodes} episode menyelesaikan seluruh checklist produksi.`,
+      `${current.incompleteGuestPreparation} episode belum menuntaskan persiapan tamu dan release form.`
+    ].join(' ');
+    slide.addText(attention, {
+      x: 0.85, y: 4.62, w: 11.63, h: 1.5,
+      fontFace: 'Aptos', fontSize: 14, color: colors.text, valign: 'top', margin: 0, fit: 'shrink'
+    });
+    return slide;
+  };
+  const addFishboneSlide = () => {
+    const slide = pptx.addSlide();
+    addHeader(slide, 'Fishbone Sebab Akibat', 'Indikasi penyebab berdasarkan data produksi podcast', 11);
+    const evidence = qccFishboneEvidence(current, data);
+    const notes = S.qccNotes.fishbone || {};
+    const problem = S.qccNotes.pdca?.problem
+      || themes.find(theme => theme.id === S.qccSelectedTheme)?.title
+      || 'Pilih tema perbaikan dari temuan periode ini';
+    const cardXs = [0.65, 3.75, 6.85];
+    const cardW = 2.9;
+    const cardH = 1.42;
+    const topY = 1.55;
+    const bottomY = 4.82;
+    const spineY = 4.05;
+    const spineEnd = 10.2;
+
+    slide.addShape(pptx.ShapeType.line, {
+      x: 0.65, y: spineY, w: spineEnd - 0.65, h: 0,
+      line: { color: colors.navy, width: 1.5 }
+    });
+    FISHBONE_CATEGORIES.forEach(([, category], index) => {
+      const x = cardXs[index % 3];
+      const center = x + cardW / 2;
+      const top = index < 3;
+      slide.addShape(pptx.ShapeType.line, {
+        x: center - 0.28,
+        y: top ? topY + cardH : spineY,
+        w: 0.28,
+        h: top ? spineY - (topY + cardH) : bottomY - spineY,
+        line: { color: colors.navy, width: 1.2 }
+      });
+    });
+
+    FISHBONE_CATEGORIES.forEach(([key, category], index) => {
+      const x = cardXs[index % 3];
+      const y = index < 3 ? topY : bottomY;
+      addPanel(slide, x, y, cardW, cardH, colors.pale);
+      slide.addText(category, {
+        x: x + 0.18, y: y + 0.13, w: cardW - 0.36, h: 0.26,
+        fontFace: 'Aptos', fontSize: 13, bold: true, color: colors.navy, margin: 0
+      });
+      slide.addText(`${evidence[key]}${notes[key] ? `; catatan: ${notes[key]}` : ''}`, {
+        x: x + 0.18, y: y + 0.47, w: cardW - 0.36, h: cardH - 0.58,
+        fontFace: 'Aptos', fontSize: 10.5, color: colors.text,
+        margin: 0, valign: 'top', fit: 'shrink'
+      });
+    });
+
+    addPanel(slide, 10.35, 3.18, 2.38, 1.75, colors.navy);
+    slide.addText('MASALAH UTAMA', {
+      x: 10.52, y: 3.34, w: 2.04, h: 0.26,
+      fontFace: 'Aptos', fontSize: 10, bold: true, color: 'C9D6DF',
+      align: 'center', margin: 0
+    });
+    slide.addText(problem, {
+      x: 10.52, y: 3.72, w: 2.04, h: 1.02,
+      fontFace: 'Aptos', fontSize: 12, bold: true, color: colors.white,
+      align: 'center', valign: 'mid', margin: 0, fit: 'shrink'
+    });
+    return slide;
+  };
+  const addComparisonSlide = () => {
+    const slide = pptx.addSlide();
+    addHeader(slide, 'Perbandingan Dua Rentang', 'Episode masuk bila tanggal rekaman atau rilis berada dalam rentang', 13);
+    const rows = [
+      { label: 'Episode dianalisis', current: current.total, compare: compare.total, format: value => String(value) },
+      { label: 'Progres produksi', current: current.averageProgress, compare: compare.averageProgress, format: value => qccRate(value) },
+      { label: 'Checklist selesai', current: current.completedTasks, compare: compare.completedTasks, format: value => String(value) },
+      { label: 'Episode selesai', current: current.completedEpisodes, compare: compare.completedEpisodes, format: value => String(value) },
+      { label: 'Episode diunggah', current: current.publishedEpisodes, compare: compare.publishedEpisodes, format: value => String(value) },
+      { label: 'Checklist tertunda', current: current.remainingTasks, compare: compare.remainingTasks, format: value => String(value) },
+      { label: 'Rata-rata views', current: current.averageViews, compare: compare.averageViews, format: value => value === null ? '-' : Math.round(value).toLocaleString('id-ID') },
+      { label: 'Rata-rata retensi', current: current.averageRetention, compare: compare.averageRetention, format: value => qccRate(value) },
+      { label: 'Capaian target rilis', current: releaseTargetRate, compare: compareSupport.releaseTargetRate, format: value => qccRate(value) }
+    ];
+    const currentLabel = periodRangeLabel(period.from, period.to);
+    const compareLabel = periodRangeLabel(period.compareFrom, period.compareTo);
+    slide.addText(currentLabel, {
+      x: 3.35, y: 1.45, w: 3.7, h: 0.28,
+      fontFace: 'Aptos', fontSize: 10.5, bold: true, color: colors.blue, margin: 0, fit: 'shrink'
+    });
+    slide.addText(compareLabel, {
+      x: 8.05, y: 1.45, w: 3.7, h: 0.28,
+      fontFace: 'Aptos', fontSize: 10.5, bold: true, color: colors.orange, margin: 0, fit: 'shrink'
+    });
+    rows.forEach((row, index) => {
+      const y = 1.86 + index * 0.52;
+      const currentValue = Number.isFinite(row.current) ? row.current : 0;
+      const compareValue = Number.isFinite(row.compare) ? row.compare : 0;
+      const max = Math.max(1, currentValue, compareValue);
+      if (index % 2 === 0) addPanel(slide, 0.6, y - 0.08, 12.13, 0.52, 'F5F7F8');
+      slide.addText(row.label, {
+        x: 0.78, y, w: 2.35, h: 0.25,
+        fontFace: 'Aptos', fontSize: 10.5, color: colors.text, margin: 0, fit: 'shrink'
+      });
+      [
+        { x: 3.35, numberX: 6.52, value: currentValue, text: row.format(row.current), color: colors.blue },
+        { x: 8.05, numberX: 11.22, value: compareValue, text: row.format(row.compare), color: colors.orange }
+      ].forEach(series => {
+        slide.addShape(pptx.ShapeType.rect, {
+          x: series.x, y: y + 0.04, w: 2.55, h: 0.12,
+          fill: { color: colors.pale }, line: { color: colors.pale }
+        });
+        if (series.value > 0) slide.addShape(pptx.ShapeType.rect, {
+          x: series.x, y: y + 0.04, w: Math.max(0.04, series.value / max * 2.55), h: 0.12,
+          fill: { color: series.color }, line: { color: series.color }
+        });
+        slide.addText(series.text, {
+          x: series.numberX, y, w: 0.8, h: 0.25,
+          fontFace: 'Aptos', fontSize: 10, bold: true, color: colors.text,
+          align: 'right', margin: 0, fit: 'shrink'
+        });
+      });
     });
     return slide;
   };
@@ -1200,30 +1504,53 @@ async function exportQccPptReport() {
   pptx.theme = { headFontFace: 'Aptos Display', bodyFontFace: 'Aptos', lang: 'id-ID' };
 
   let slide = pptx.addSlide();
-  slide.background = { color: 'EFF6FF' };
-  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.2, fill: { color: '2563EB' }, line: { color: '2563EB' } });
-  slide.addText('QUALITY CONTROL CIRCLE - PODCAST', { x: 0.85, y: 2, w: 11.6, h: 0.55, fontFace: 'Aptos', fontSize: 16, bold: true, color: '2563EB', margin: 0 });
-  slide.addText('Laporan Analisa QCC', { x: 0.85, y: 2.65, w: 11.6, h: 0.9, fontFace: 'Aptos Display', fontSize: 34, bold: true, color: '1E293B', margin: 0 });
-  slide.addText(data.baseline ? 'Baseline seluruh episode - jadwal belum diatur' : qccPeriodLabel(period.from, period.to), { x: 0.85, y: 3.7, w: 11.6, h: 0.4, fontFace: 'Aptos', fontSize: 18, color: '475569', margin: 0 });
-  slide.addText('MinePod by Lourdes', { x: 0.85, y: 6.35, w: 11.6, h: 0.3, fontFace: 'Aptos', fontSize: 13, color: '64748B', margin: 0 });
+  slide.background = { color: colors.navy };
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: 0, w: 13.333, h: 0.2,
+    fill: { color: colors.orange }, line: { color: colors.orange }
+  });
+  slide.addText('QUALITY CONTROL CIRCLE  /  MINEPOD', {
+    x: 0.6, y: 2.05, w: 11.9, h: 0.45,
+    fontFace: 'Aptos', fontSize: 15, bold: true, color: 'C9D6DF', margin: 0
+  });
+  slide.addText('Laporan Analisa QCC\nProduksi Podcast', {
+    x: 0.6, y: 2.62, w: 11.9, h: 1.15,
+    fontFace: 'Aptos Display', fontSize: 34, bold: true, color: colors.white,
+    margin: 0, fit: 'shrink'
+  });
+  slide.addText(data.baseline ? 'Baseline seluruh episode - jadwal belum diatur' : periodRangeLabel(period.from, period.to), {
+    x: 0.6, y: 3.98, w: 11.6, h: 0.4,
+    fontFace: 'Aptos', fontSize: 18, color: 'C9D6DF', margin: 0
+  });
+  slide.addText(`Pembanding: ${periodRangeLabel(period.compareFrom, period.compareTo)}`, {
+    x: 0.6, y: 4.52, w: 11.6, h: 0.35,
+    fontFace: 'Aptos', fontSize: 13, color: 'C9D6DF', margin: 0
+  });
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0.6, y: 6.05, w: 1.65, h: 0.75,
+    fill: { color: colors.white }, line: { color: colors.white }
+  });
+  slide.addText('MINEPOD', {
+    x: 0.7, y: 6.27, w: 1.45, h: 0.25,
+    fontFace: 'Aptos', fontSize: 12, bold: true, color: colors.navy, align: 'center', margin: 0
+  });
+  slide.addText('by Lourdes Auto Parts', {
+    x: 2.48, y: 6.28, w: 4.5, h: 0.25,
+    fontFace: 'Aptos', fontSize: 12, color: 'C9D6DF', margin: 0
+  });
 
-  addTextSlide('Ringkasan Produksi Podcast', [
-    `${current.total} episode dianalisis; progres checklist rata-rata ${qccRate(current.averageProgress)}.`,
-    `${current.completedEpisodes} episode selesai; ${current.publishedEpisodes} episode ditandai sudah diunggah.`,
-    `${current.completedTasks} dari ${current.totalTasks} checklist selesai; ${current.remainingTasks} tugas masih tertunda.`,
-    `${current.overdueReleases} episode melewati tanggal rilis dan belum diunggah.`
-  ], 2, data.baseline ? 'Baseline seluruh episode' : qccPeriodLabel(period.from, period.to));
-  addTextSlide('Sumber Data', [
+  addSummarySlide();
+  addTextSlide('Sumber dan Cakupan Data', [
     'Pipeline episode dan checklist dari menu Episode.',
     'Tanggal rekaman dan rilis untuk menyaring rentang analisa.',
-    'Views, retensi, interaksi, subscriber, dan calon mitra dari Report Episode.',
-    'Jadwal tamu, kesiapan peralatan, dan risiko produksi dari menu aplikasi.'
+    'Views dan retensi pendengar dari Report Episode jika tersedia.',
+    'Kesiapan tamu, peralatan, dan mitigasi risiko dari menu aplikasi.'
   ], 3);
   addBarSlide('Pareto Checklist Tertunda per Tahap', data.pareto.map(row => ({ label: row.label, value: row.value })), 4, 'tugas');
   addBarSlide('Progres Checklist per Tahap', stageProgressRows, 5, '%');
-  addTextSlide('Kandidat Tema Perbaikan', themes.map(theme => `${theme.title} ? ${theme.evidence}${S.qccSelectedTheme === theme.id ? ' (tema dipilih)' : ''}`), 6);
+  addTextSlide('Kandidat Tema Perbaikan', themes.map(theme => `${theme.title} - ${theme.evidence}${S.qccSelectedTheme === theme.id ? ' (tema dipilih)' : ''}`), 6);
   addBarSlide('Distribusi Pipeline Episode', pipelineRows, 7, 'episode');
-  addTextSlide('Jadwal Rekaman dan Rilis', currentEpisodes.map(episode =>
+  addTextSlide('Kesiapan Jadwal Rekaman dan Rilis', currentEpisodes.map(episode =>
     `${episode.title || 'Episode tanpa judul'} - rekaman ${dt(episode.rec)}, rilis ${dt(episode.rel)}, tahap ${ST[stg(episode)]}`
   ), 8);
   addTextSlide('Performa Pendengar', [
@@ -1231,23 +1558,17 @@ async function exportQccPptReport() {
     `Rata-rata retensi: ${qccRate(current.averageRetention)}.`,
     `${current.reportedEpisodes} episode memiliki setidaknya satu metrik pascarilis.`
   ], 9);
-  addTextSlide('Kesiapan Tamu dan Materi', [
+  addTextSlide('Kesiapan Produksi: Tamu, Peralatan, dan Risiko', [
     `${current.incompleteGuestPreparation} episode belum menuntaskan konfirmasi tamu atau release form.`,
     `${current.missingGuest} episode belum mencantumkan tamu; ${current.missingGoal} belum mengisi tujuan utama.`,
-    `${current.missingTitle} episode belum mengisi judul atau topik.`
+    `${current.missingTitle} episode belum mengisi judul atau topik.`,
+    `${data.equipmentPending} peralatan belum berstatus diterima; ${data.openRisks} risiko belum dimitigasi.`
   ], 10);
-  const evidence = qccFishboneEvidence(current, data);
-  const fishboneNotes = S.qccNotes.fishbone || {};
-  addTextSlide('Fishbone Sebab Akibat', FISHBONE_CATEGORIES.map(([key, category]) => `${category}: ${evidence[key]}${fishboneNotes[key] ? `; catatan: ${fishboneNotes[key]}` : ''}`), 11);
+  addFishboneSlide();
   addTextSlide('Progres per Episode', currentEpisodes.map(episode =>
-    `${episode.title || 'Episode tanpa judul'} ? ${ST[stg(episode)]}, ${pct(episode)}% (${cnt(episode)}/${NT} checklist)`
+    `${episode.title || 'Episode tanpa judul'} - ${ST[stg(episode)]}, ${pct(episode)}% (${cnt(episode)}/${NT} checklist)`
   ), 12);
-  addTextSlide('Perbandingan Dua Rentang', [
-    `Periode utama: ${current.total} episode; progres rata-rata ${qccRate(current.averageProgress)}; ${current.remainingTasks} checklist tertunda.`,
-    `Pembanding: ${compare.total} episode; progres rata-rata ${qccRate(compare.averageProgress)}; ${compare.remainingTasks} checklist tertunda.`,
-    `Episode selesai: ${current.completedEpisodes} vs ${compare.completedEpisodes}; sudah diunggah: ${current.publishedEpisodes} vs ${compare.publishedEpisodes}.`,
-    `Views rata-rata: ${current.averageViews === null ? 'belum ada data' : Math.round(current.averageViews).toLocaleString('id-ID')} vs ${compare.averageViews === null ? 'belum ada data' : Math.round(compare.averageViews).toLocaleString('id-ID')}.`
-  ], 13);
+  addComparisonSlide();
   addTextSlide('Target Rilis Episode', [
     `Target jumlah rilis: ${metrics.releaseTarget || 'belum diisi'}.`,
     `Capaian rilis periode ini: ${current.publishedEpisodes}.`,
@@ -1261,13 +1582,13 @@ async function exportQccPptReport() {
     `Plan: ${pdca.plan || 'belum diisi'}. Do: ${pdca.do || 'belum diisi'}.`,
     `Check: ${pdca.check || 'belum diisi'}. Act: ${pdca.act || 'belum diisi'}.`
   ], 15);
-  addTextSlide('Batasan Data', [
+  addTextSlide('Batasan Data dan Ketersediaan Informasi', [
     'Analisa menggunakan jadwal rekaman/rilis dan checklist yang tercatat pada aplikasi.',
     `${data.episodes.filter(episode => !episode.rec && !episode.rel).length} episode belum memiliki tanggal rekaman maupun rilis.`,
     `${current.reportedEpisodes} episode memiliki data pascarilis pada rentang ini.`,
     'Views dan retensi hanya dihitung dari angka yang diisi pada Report Episode.'
   ], 16);
-  addTextSlide('Penutup', [
+  addTextSlide('Berikutnya: Pilih Tema dan Tetapkan Target', [
     'Validasi temuan bersama tim podcast sebelum menetapkan akar masalah.',
     'Pilih satu tema, tetapkan target yang terukur, dan tinjau tindak lanjut PDCA pada siklus berikutnya.'
   ], 17);
